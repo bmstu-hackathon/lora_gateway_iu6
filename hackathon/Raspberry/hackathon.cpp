@@ -3,7 +3,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <termios.h> 
+#include <termios.h>
 #include  <signal.h>
 #include <sys/time.h>
 #include <time.h>
@@ -21,11 +21,11 @@ uint32_t loraChannelArray[MAX_NB_CHANNEL]={CH_10_868,CH_11_868,CH_12_868,CH_13_8
 #define LORA_ADDR 1 //Self address
 #define DEFAULT_DEST_ADDR 6 //Gateway address
 
-  #define PRINTLN                   printf("\n")
-  #define PRINT_CSTSTR(fmt,param)   printf(fmt,param)
-  #define PRINT_STR(fmt,param)      PRINT_CSTSTR(fmt,param)
-  #define PRINT_VALUE(fmt,param)    PRINT_CSTSTR(fmt,param)
-  #define FLUSHOUTPUT               fflush(stdout);
+#define PRINTLN                   printf("\n")
+#define PRINT_CSTSTR(fmt,param)   printf(fmt,param)
+#define PRINT_STR(fmt,param)      PRINT_CSTSTR(fmt,param)
+#define PRINT_VALUE(fmt,param)    PRINT_CSTSTR(fmt,param)
+#define FLUSHOUTPUT               fflush(stdout);
 
 
 
@@ -50,7 +50,7 @@ uint8_t MSS=40;
 void startConfig() {
 
   int e;
-    
+
   // Set transmission mode and print the result
   e = sx1272.setMode(loraMode);
   // Select frequency channel
@@ -59,7 +59,7 @@ void startConfig() {
   }
   else {
     e = sx1272.setChannel(loraChannel);
-  }  
+  }
   // Select output power (Max, High or Low)
   e = sx1272.setPower(loraPower);
   // get preamble length
@@ -72,12 +72,12 @@ void startConfig() {
 
 void setup() {
   int e;
-  
+
   //Add our code here
   Serial.begin(38400);
   // Power ON the module
   e = sx1272.ON();
-  
+
   PRINT_CSTSTR("%s","^$**********Power ON: state ");
   PRINT_VALUE("%d", e);
   PRINTLN;
@@ -89,13 +89,13 @@ void setup() {
     PRINT_VALUE("%X", sx1272._syncWord);
     PRINTLN;
 
-  }    
-  
+  }
+
   if (!e) {
     radioON=true;
     startConfig();
   }
-  
+
   FLUSHOUTPUT;
   delay(1000);
 
@@ -113,31 +113,31 @@ void loop() {
 
       // periodic message sending
       if (inter_pkt_time)
-      
+
         if (millis()-last_periodic_sendtime > (random_inter_pkt_time?random_inter_pkt_time:inter_pkt_time)) {
           PRINT_CSTSTR("%s","Start to send data: ");
-          PRINT_VALUE("%ld",millis());  
+          PRINT_VALUE("%ld",millis());
           PRINTLN;
-          
+
           sx1272.CarrierSense();
           long startSend=millis();
           e = sx1272.sendPacketTimeout(dest_addr, (uint8_t*)cmd, strlen(cmd), 10000);
           PRINT_CSTSTR("%s","LoRa Sent in ");
-          PRINT_VALUE("%ld",millis()-startSend);  
+          PRINT_VALUE("%ld",millis()-startSend);
           PRINTLN;
           PRINT_CSTSTR("%s","Packet sent, state ");
           PRINT_VALUE("%d",e);
           PRINTLN;
-          if (random_inter_pkt_time) {                
+          if (random_inter_pkt_time) {
             random_inter_pkt_time=random()%inter_pkt_time+1000;
             PRINT_CSTSTR("%s","next in ");
             PRINT_VALUE("%ld",random_inter_pkt_time);
             PRINTLN;
           }
-          last_periodic_sendtime=millis();       
-        }  
-        
-      // the end-device should also open a receiving window to receive 
+          last_periodic_sendtime=millis();
+        }
+
+      // the end-device should also open a receiving window to receive
       // INIT & UPDT messages
       e=1;
       // open a receive window
@@ -149,45 +149,46 @@ void loop() {
       if (!e) {
          int a=0, b=0;
          uint8_t tmp_length;
+         printf("Recieved!");
 
          sx1272.getSNR();
          sx1272.getRSSIpacket();
 
          tmp_length=sx1272._payloadlength;
-         
-         sprintf(sprintf_buf,"--- rxlora. dst=%d type=0x%.2X src=%d seq=%d len=%d SNR=%d RSSIpkt=%d BW=%d CR=4/%d SF=%d\n", 
+
+         sprintf(sprintf_buf,"--- rxlora. dst=%d type=0x%.2X src=%d seq=%d len=%d SNR=%d RSSIpkt=%d BW=%d CR=4/%d SF=%d\n",
                    sx1272.packet_received.dst,
-                   sx1272.packet_received.type, 
+                   sx1272.packet_received.type,
                    sx1272.packet_received.src,
                    sx1272.packet_received.packnum,
-                   tmp_length, 
+                   tmp_length,
                    sx1272._SNR,
                    sx1272._RSSIpacket,
                    (sx1272._bandwidth==BW_125)?125:((sx1272._bandwidth==BW_250)?250:500),
                    sx1272._codingRate+4,
                    sx1272._spreadingFactor);
-                   
+
          PRINT_STR("%s",sprintf_buf);
          // provide a short output for external program to have information about the received packet
          // ^psrc_id,seq,len,SNR,RSSI
          sprintf(sprintf_buf,"^p%d,%d,%d,%d,%d,%d,%d\n",
                    sx1272.packet_received.dst,
-                   sx1272.packet_received.type,                   
+                   sx1272.packet_received.type,
                    sx1272.packet_received.src,
-                   sx1272.packet_received.packnum, 
+                   sx1272.packet_received.packnum,
                    tmp_length,
                    sx1272._SNR,
                    sx1272._RSSIpacket);
-                   
-         PRINT_STR("%s",sprintf_buf);          
+
+         PRINT_STR("%s",sprintf_buf);
 
          // ^rbw,cr,sf
-         sprintf(sprintf_buf,"^r%d,%d,%d\n", 
+         sprintf(sprintf_buf,"^r%d,%d,%d\n",
                    (sx1272._bandwidth==BW_125)?125:((sx1272._bandwidth==BW_250)?250:500),
                    sx1272._codingRate+4,
                    sx1272._spreadingFactor);
-                   
-         PRINT_STR("%s",sprintf_buf);  
+
+         PRINT_STR("%s",sprintf_buf);
 
       }
 
@@ -198,10 +199,10 @@ void loop() {
 int main (int argc, char *argv[]){
 
   setup();
-  
+
   while(1){
     loop();
   }
-  
+
   return (0);
 }

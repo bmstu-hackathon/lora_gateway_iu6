@@ -58,7 +58,7 @@ void startConfig() {
   // get preamble length
   e = sx1272.getPreambleLength();
   // Set the node address and print the result
-  //e = sx1272.setNodeAddress(loraAddr);
+  //e = SX1272.setNodeAddress(loraAddr);
   sx1272._nodeAddress=loraAddr;
   e=0;
 }
