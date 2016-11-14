@@ -48,7 +48,7 @@
 //#define W_INITIALIZATION
 #define SX1272_RST  3
 
-#define ARDUINO_AVR_PRO
+#define ARDUINO_AVR_PRO 1
 
 #if defined ARDUINO_AVR_PRO || defined ARDUINO_AVR_NANO || defined ARDUINO_AVR_MINI || defined __MK20DX256__
 #define SX1272_SS 10
