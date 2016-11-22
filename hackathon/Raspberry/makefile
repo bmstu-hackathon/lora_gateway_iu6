@@ -10,3 +10,4 @@ lib: arduPi.o arduPi_pi2.o SX1272.o SX1272_pi2.o SX1272_wnetkey.o SX1272_pi2_wne
 
 clean:
 	-rm *.o
+	-rm hackathon
